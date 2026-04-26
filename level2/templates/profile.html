@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OktaPath — Profile</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      margin: 0;
+      padding: 0;
+    }
+    .wrap {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 16px;
+      color: #111827;
+    }
+    .nav-right {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .nav-right a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .nav-right a:hover {
+      text-decoration: underline;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 14px 0;
+    }
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .avatar-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .avatar-fallback {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #111827;
+      line-height: 1.3;
+    }
+    .user-email {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    td {
+      padding: 7px 0;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    td:first-child {
+      color: #6b7280;
+      width: 120px;
+    }
+    td:last-child {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #111827;
+      word-break: break-all;
+    }
+    ol {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.8;
+      padding-left: 18px;
+      margin: 0;
+    }
+    .claims-note {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 0 0 10px 0;
+    }
+    .explore-link {
+      display: block;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      text-align: center;
+      text-decoration: none;
+      color: #374151;
+      font-size: 13px;
+      margin-bottom: 8px;
+      background: #ffffff;
+    }
+    .explore-link:hover {
+      background: #f9fafb;
+    }
+    .explore-link:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <nav>
+      <div class="nav-brand">OktaPath</div>
+      <div class="nav-right">
+        {{ user.email }} · <a href="/logout">Sign out</a>
+      </div>
+    </nav>
+
+    <div class="card">
+      <div class="card-title">Your profile</div>
+      <div class="profile-row">
+        {% if user.picture %}
+          <img class="avatar-img" src="{{ user.picture }}" width="48" height="48" alt="">
+        {% else %}
+          <div class="avatar-fallback">
+            {{ (user.name or user.email or "?")[0]|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <div class="user-name">{{ user.name }}</div>
+          <div class="user-email">{{ user.email }}</div>
+        </div>
+      </div>
+      <table>
+        <tr><td>Name</td><td>{{ user.name }}</td></tr>
+        <tr><td>Email</td><td>{{ user.email }}</td></tr>
+        <tr><td>User ID</td><td>{{ user.sub | short }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What just happened?</div>
+      <ol>
+        <li>You clicked "Continue with Google"</li>
+        <li>We generated a secret PKCE verifier and stored it in your session</li>
+        <li>We sent a hashed version of it (the challenge) to Auth0</li>
+        <li>Auth0 showed you a Google login — your password went to Google, not us</li>
+        <li>Google confirmed your identity to Auth0</li>
+        <li>Auth0 redirected back here with a short-lived code</li>
+        <li>We sent that code + the original verifier to Auth0's token endpoint</li>
+        <li>Auth0 hashed our verifier and checked it matched the challenge</li>
+        <li>Auth0 issued a signed ID token containing your name and email</li>
+        <li>We verified the token's signature using Auth0's public keys (JWKS)</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your ID token claims</div>
+      <p class="claims-note">The decoded payload from the JWT Auth0 issued you.</p>
+      <table>
+        {% if claims.sub is not none %}<tr><td>sub</td><td>{{ claims.sub | short }}</td></tr>{% endif %}
+        {% if claims.name is not none %}<tr><td>name</td><td>{{ claims.name }}</td></tr>{% endif %}
+        {% if claims.email is not none %}<tr><td>email</td><td>{{ claims.email }}</td></tr>{% endif %}
+        {% if claims.picture is not none %}<tr><td>picture</td><td>{{ claims.picture | short }}</td></tr>{% endif %}
+        {% if claims.iss is not none %}<tr><td>iss</td><td>{{ claims.iss | short }}</td></tr>{% endif %}
+        {% if claims.aud is not none %}<tr><td>aud</td><td>{{ claims.aud | short }}</td></tr>{% endif %}
+        {% if claims.exp is not none %}<tr><td>exp</td><td>{{ claims.exp }}</td></tr>{% endif %}
+        {% if claims.iat is not none %}<tr><td>iat</td><td>{{ claims.iat }}</td></tr>{% endif %}
+        <tr><td>updated_at</td><td>{{ claims.updated_at if claims.updated_at else "—" }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Explore Level 2</div>
+      <a class="explore-link" href="/secure">Secure area (requires MFA) →</a>
+      <a class="explore-link" href="/admin">Admin panel →</a>
+    </div>
+
+  </div>
+</body>
+</html>

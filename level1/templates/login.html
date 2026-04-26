@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OktaPath — Sign in</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #ffffff;
+      max-width: 380px;
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 32px;
+      box-sizing: border-box;
+    }
+    .label {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+    h2 {
+      margin: 0 0 12px 0;
+      font-size: 20px;
+      color: #111827;
+    }
+    p {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .btn:hover {
+      background: #1d4ed8;
+    }
+    .footer-note {
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="label">Level 1 — Auth0 + PKCE</div>
+    <h2>Sign in</h2>
+    <p>Click below to sign in with your Google account. You'll be redirected to Auth0. Your credentials never touch this server.</p>
+    <a class="btn" href="/login">Continue with Google →</a>
+    <div class="footer-note">Secured by Auth0 · PKCE flow</div>
+  </div>
+</body>
+</html>

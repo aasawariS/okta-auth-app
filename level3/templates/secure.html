@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OktaPath — Secure area</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      margin: 0;
+      padding: 0;
+    }
+    .wrap {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 16px;
+      color: #111827;
+    }
+    .nav-right {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .nav-right a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .nav-right a:hover {
+      text-decoration: underline;
+    }
+    .banner-mfa {
+      background: #dcfce7;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .banner-mfa .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #16a34a;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .banner-mfa .heading {
+      font-weight: 600;
+      font-size: 14px;
+      color: #14532d;
+      vertical-align: middle;
+    }
+    .banner-mfa p {
+      margin: 8px 0 0 0;
+      font-size: 13px;
+      color: #166534;
+      line-height: 1.5;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 14px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    td {
+      padding: 7px 0;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    td:first-child {
+      color: #6b7280;
+      width: 120px;
+    }
+    td:last-child {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #111827;
+      word-break: break-all;
+    }
+    .table-note {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 10px 0 0 0;
+      line-height: 1.5;
+    }
+    ol {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.8;
+      padding-left: 18px;
+      margin: 0;
+    }
+    .back-link {
+      display: inline-block;
+      font-size: 13px;
+      color: #2563eb;
+      text-decoration: none;
+      margin-top: 8px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <nav>
+      <div class="nav-brand">OktaPath</div>
+      <div class="nav-right">
+        {{ user.email }} · <a href="/logout">Sign out</a>
+      </div>
+    </nav>
+
+    <div class="banner-mfa">
+      <span class="dot"></span><span class="heading">MFA verified</span>
+      <p>You reached this page because your Auth0 token contains 'mfa' in the amr claim. This was checked server-side before this page was rendered.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Token proof</div>
+      <table>
+        <tr><td>amr</td><td>{{ amr | join(", ") }}</td></tr>
+        <tr><td>acr</td><td>{{ claims.acr if claims.acr else "—" }}</td></tr>
+        <tr><td>verified at</td><td>{{ stepup_at if stepup_at else "—" }}</td></tr>
+        <tr><td>mfa present</td><td>Yes</td></tr>
+      </table>
+      <p class="table-note">The amr claim lists every authentication method used. 'mfa' means a second factor was completed this session.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What just happened?</div>
+      <ol>
+        <li>You clicked "Secure area"</li>
+        <li>The server checked your session — no MFA in the amr claim</li>
+        <li>Your destination URL was saved in the session</li>
+        <li>You were redirected to Auth0 with acr_values requesting MFA</li>
+        <li>max_age=0 forced Auth0 to challenge you — no SSO shortcuts</li>
+        <li>You completed a second factor (Google prompt or authenticator)</li>
+        <li>Auth0 redirected back with a fresh code</li>
+        <li>We exchanged it for new tokens with mfa in the amr claim</li>
+        <li>We verified mfa was present before updating your session</li>
+        <li>You were redirected here — your original destination</li>
+      </ol>
+    </div>
+
+    <a class="back-link" href="/profile">← Back to profile</a>
+
+  </div>
+</body>
+</html>

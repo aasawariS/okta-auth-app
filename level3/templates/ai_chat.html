@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OktaPath — AI chat</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      margin: 0;
+      padding: 0;
+    }
+    .wrap {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 16px;
+      color: #111827;
+    }
+    .nav-right {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .nav-right a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .nav-right a:hover {
+      text-decoration: underline;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 14px 0;
+    }
+    .small-grey {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 0 0 12px 0;
+      line-height: 1.5;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    td {
+      padding: 7px 0;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    td:first-child {
+      color: #6b7280;
+      width: 120px;
+    }
+    td:last-child {
+      color: #111827;
+      font-size: 13px;
+    }
+    #messages {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 200px;
+      max-height: 360px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      background: white;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    #msg {
+      flex: 1;
+      resize: none;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      line-height: 1.5;
+      box-sizing: border-box;
+    }
+    .send-btn {
+      padding: 10px 18px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      align-self: flex-end;
+      font-family: inherit;
+    }
+    .send-btn:hover {
+      background: #1d4ed8;
+    }
+    #typing {
+      display: none;
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+    .back-link {
+      display: inline-block;
+      font-size: 13px;
+      color: #2563eb;
+      text-decoration: none;
+      margin-top: 8px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <nav>
+      <div class="nav-brand">OktaPath</div>
+      <div class="nav-right">
+        {{ user.email }} · <a href="/logout">Sign out</a>
+      </div>
+    </nav>
+
+    <div class="card">
+      <div class="card-title">Your identity in the AI prompt</div>
+      <p class="small-grey">Claude knows who you are from your Auth0 token. This was injected into the system prompt server-side — you didn't type it.</p>
+      <table>
+        <tr><td>Logged in as</td><td>{{ user.name }} ({{ role }})</td></tr>
+        <tr><td>Email</td><td>{{ user.email }}</td></tr>
+        <tr><td>Auth methods</td><td>{{ claims.amr | join(", ") if claims.amr else "pwd" }}</td></tr>
+        <tr><td>Verified by</td><td>Auth0</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Chat</div>
+      <div id="messages">
+        <div style="background:#eff6ff;border-radius:0 8px 8px 8px;padding:10px 12px;margin-bottom:10px;max-width:85%;color:#1e3a5f">
+          Hi {{ user.name.split()[0] if user.name else "there" }}! I know you're logged in as a {{ role }} and you authenticated with {{ claims.amr | join(" + ") if claims.amr else "password" }}. Ask me anything about Auth0 or authentication.
+        </div>
+      </div>
+      <div class="input-row">
+        <textarea id="msg" rows="2" placeholder="Ask a question..."></textarea>
+        <button class="send-btn" onclick="send()">Send</button>
+      </div>
+      <div id="typing">Thinking...</div>
+      <script>
+        async function send() {
+          const input = document.getElementById("msg");
+          const text  = input.value.trim();
+          if (!text) return;
+          addMsg(text, "user");
+          input.value = "";
+          document.getElementById("typing").style.display = "block";
+          try {
+            const res  = await fetch("/ai/chat", {
+              method:  "POST",
+              headers: {"Content-Type": "application/json"},
+              body:    JSON.stringify({message: text})
+            });
+            // Try JSON first; if the server crashed and returned HTML
+            // we fall back to showing the raw text so the user sees the real error.
+            let data;
+            const ct = res.headers.get("content-type") || "";
+            if (ct.includes("application/json")) {
+              data = await res.json();
+            } else {
+              const txt = await res.text();
+              data = {error: "Server returned non-JSON (status " + res.status + "). Check the Flask terminal for the traceback."};
+            }
+            addMsg(data.reply || data.error || "Empty response.", "ai");
+          } catch (e) {
+            addMsg("Network error: " + e.message, "ai");
+          } finally {
+            document.getElementById("typing").style.display = "none";
+          }
+        }
+        function addMsg(text, who) {
+          const box = document.getElementById("messages");
+          const d   = document.createElement("div");
+          d.textContent = text;
+          d.style.cssText = who === "user"
+            ? "background:#2563eb;color:white;border-radius:8px 0 8px 8px;padding:10px 12px;margin-bottom:10px;max-width:85%;margin-left:auto"
+            : "background:#eff6ff;color:#1e3a5f;border-radius:0 8px 8px 8px;padding:10px 12px;margin-bottom:10px;max-width:85%";
+          box.appendChild(d);
+          box.scrollTop = box.scrollHeight;
+        }
+        document.getElementById("msg").addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            send();
+          }
+        });
+      </script>
+    </div>
+
+    <a class="back-link" href="/profile">← Back to profile</a>
+
+  </div>
+</body>
+</html>
